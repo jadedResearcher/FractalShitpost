@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:html';
-//https://progur.com/2017/02/create-mandelbrot-fractal-javascript.html
+//https://progur.com/2017/02/create-mandelbrot-fractal-javascript.html <--shamlessly copied this
+//https://github.com/HackerPoet/FractalSoundExplorer/blob/main/Main.cpp  <-- inspired by this
 class Fractal {
     int height = 500;
     int width = 500;
@@ -13,39 +14,52 @@ class Fractal {
     void attach(Element parent) {
         this.parent = parent;
         parent.append(canvas);
-        render();
+        render(0);
     }
 
     void debug() {
         canvas.context2D.fillRect(0,0,500,500);
     }
 
-    double checkIfBelongsToMandelbrotSet(double x, double y) {
-        var realComponentOfResult = x;
-        var imaginaryComponentOfResult = y;
-        for(var i = 0; i < maxIterations; i++) {
-            var tempRealComponent = realComponentOfResult * realComponentOfResult
-                - imaginaryComponentOfResult * imaginaryComponentOfResult
-                + x;
-            var tempImaginaryComponent = 2 * realComponentOfResult * imaginaryComponentOfResult
-                + y;
-            realComponentOfResult = tempRealComponent;
-            imaginaryComponentOfResult = tempImaginaryComponent;
+    //no side effects bro
+    Result mandelbrot(double x, double y, Result res) {
+        var tempRealComponent = res.realComponentOfResult * res.realComponentOfResult
+            - res.imaginaryComponentOfResult * res.imaginaryComponentOfResult
+            + x;
+        var tempImaginaryComponent = 2 * res.realComponentOfResult * res.imaginaryComponentOfResult
+            + y;
 
+        return new Result(tempRealComponent, tempImaginaryComponent);
+    }
+
+    Result burning_ship(double x, double y, Result res) {
+        var tempRealComponent = res.realComponentOfResult * res.realComponentOfResult
+            - res.imaginaryComponentOfResult * res.imaginaryComponentOfResult
+            + x;
+        var tempImaginaryComponent = 2 * (res.realComponentOfResult * res.imaginaryComponentOfResult).abs()
+            + y;
+
+        return new Result(tempRealComponent, tempImaginaryComponent);
+    }
+
+    double checkIfBelongsToSet(double x, double y, dynamic equation) {
+        Result ongoingResult = new Result(x,y);
+        for(var i = 0; i < maxIterations; i++) {
+            ongoingResult = equation(x,y,ongoingResult);
             // Return a number as a percentage
-            if(realComponentOfResult * imaginaryComponentOfResult > 5)
+            if(ongoingResult.realComponentOfResult * ongoingResult.imaginaryComponentOfResult > 5)
                 return (i/maxIterations * 100);
         }
         return 0;   // Return zero if in set
     }
 
-    void render() {
+    void render(num placeholder) {
         CanvasRenderingContext2D ctx = canvas.context2D;
         for(int x=0; x < canvas.width; x++) {
             for(int y=0; y < canvas.height; y++) {
                 double belongsToSet =
-                checkIfBelongsToMandelbrotSet(x/magnificationFactor - panX,
-                    y/magnificationFactor - panY);
+                checkIfBelongsToSet(x/magnificationFactor - panX,
+                    y/magnificationFactor - panY, burning_ship);
 
                 if(belongsToSet == 0) {
                     ctx.fillStyle = '#000';
@@ -58,6 +72,13 @@ class Fractal {
         }
         maxIterations += 10;
         if(maxIterations > 100) maxIterations = 10;
-        new Timer(new Duration(milliseconds: 60), () => render());
+        new Timer(new Duration(milliseconds: 100), () => window.requestAnimationFrame(render));
     }
+}
+
+
+class Result {
+    double realComponentOfResult;
+    double imaginaryComponentOfResult;
+    Result(double this.realComponentOfResult, double this.imaginaryComponentOfResult);
 }
