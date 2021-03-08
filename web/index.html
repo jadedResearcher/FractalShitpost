@@ -15,6 +15,35 @@
 <body>
 
   <div id="output"></div>
+TODO:
+<textarea>
+    What even is this glorious mess and can i figure out how to make it let me render orbits to canvas?
+    //Draw the orbit
+    if (!hide_orbit) {
+      glLineWidth(1.0f);
+      glColor3f(1.0f, 0.0f, 0.0f);
+      glBegin(GL_LINE_STRIP);
+      int sx, sy;
+      double x = orbit_x;
+      double y = orbit_y;
+      PtToScreen(x, y, sx, sy);
+      glVertex2i(sx, sy);
+      double cx = (hasJulia ? jx : px);
+      double cy = (hasJulia ? jy : py);
+      for (int i = 0; i < 200; ++i) {
+        fractal(x, y, cx, cy);
+        PtToScreen(x, y, sx, sy);
+        glVertex2i(sx, sy);
+        if (x*x + y*y > escape_radius_sq) {
+          break;
+        } else if (i < max_freq / target_fps) {
+          orbit_x = x;
+          orbit_y = y;
+        }
+      }
+      glEnd();
+    }
+</textarea>
 
 </body>
 </html>

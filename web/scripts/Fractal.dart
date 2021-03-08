@@ -72,7 +72,7 @@ class Fractal {
         }
         maxIterations += 10;
         if(maxIterations > 100) maxIterations = 10;
-        new Timer(new Duration(milliseconds: 100), () => window.requestAnimationFrame(render));
+        new Timer(new Duration(milliseconds: 30), () => window.requestAnimationFrame(render));
     }
 }
 
