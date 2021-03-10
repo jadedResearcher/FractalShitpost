@@ -57,6 +57,7 @@ class Fractal {
     }
 
     void doAutoMode(num frame) {
+        if(!autoMode) return;
         print("automode");
         double maxNum = 1.0;
         double minNum = -1.0;
