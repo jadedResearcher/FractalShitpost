@@ -6,9 +6,32 @@ html, body {
   margin: 0;
   padding: 0;
   font-family: 'Roboto', sans-serif;
+  background-color: black;
 }
 
 #output {
   padding: 20px;
-  text-align: center;
+}
+
+svg{
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    pointer-events: none;
+    top:0px;
+    left: 0px;
+}
+
+.popup{
+    position: absolute;
+    box-shadow: -5px -5px 5px #ff0000;
+    background: black;
+    position: absolute;
+    top: 10%;
+    color: red;
+    border: 3px solid black;
+    font-size: 28px;
+    border-radius: 8px;
+    left: 10%;
+    padding: 20px;
 }

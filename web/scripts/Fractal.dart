@@ -6,25 +6,33 @@ import 'dart:svg';
 //https://progur.com/2017/02/create-mandelbrot-fractal-javascript.html <--shamlessly copied this
 //https://github.com/HackerPoet/FractalSoundExplorer/blob/main/Main.cpp  <-- inspired by this
 class Fractal {
-    int height = 500;
-    int width = 500;
+    int height = 1000;
+    int width = 1000;
     double panX = 1.25;
     double panY = 1.25;
-    SvgElement svg = new SvgElement.tag("svg")..style.width="500px"..style.height="500px";
+    bool mouseDown = false;
+    SvgElement svg = new SvgElement.tag("svg");
     CanvasElement canvas = new CanvasElement(width: 500, height: 500);
-    int  magnificationFactor = 200;
+    int  magnificationFactor = 300;
     Element parent;
-    int maxIterations = 100;
-    dynamic fractalChosen;
+    int maxDrawIterations = 10;
+    int maxOrbitIterations = 100;
     PathElement path = new PathElement();
+    List<dynamic> fractals;
+    int fractalChoiceIndex = 0;
 
-    StreamSubscription<MouseEvent> listener;
     void attach(Element parent) {
-        fractalChosen = burning_ship;
-        if(listener != null) {
-            listener.cancel();
-        }
-        listener = canvas.onClick.listen(drawOrbit);
+        fractals = [burning_ship, mandelbrot, sfx];;
+
+        canvas.onMouseDown.listen((MouseEvent event) => mouseDown = true);
+        window.onMouseUp.listen((MouseEvent event) => mouseDown = false);
+        canvas.onMouseMove.listen((MouseEvent event) => mouseDown? drawOrbit(event) : null);
+        window.onKeyPress.listen((KeyboardEvent event) {
+            print("key press");
+            fractalChoiceIndex = (fractalChoiceIndex + 1) % fractals.length;
+            render(0);
+        });
+
         this.parent = parent;
         parent.append(canvas);
         parent.append(svg);
@@ -41,20 +49,18 @@ class Fractal {
     }
 
     void drawOrbit(MouseEvent event) {
-        double x = event.page.x-canvas.offset.left;
-        x = x/magnificationFactor - panX;
-        double y = event.page.y-canvas.offset.top;
-        y = y/magnificationFactor -panY;
-        List<Result> orbits = getOrbit(x, y, fractalChosen);
-        window.alert("click $orbits");
-
+        double point_x = event.page.x-canvas.offset.left;
+        point_x = point_x/magnificationFactor - panX;
+        double point_y = event.page.y-canvas.offset.top;
+        point_y = point_y/magnificationFactor -panY;
+        List<Result> orbits = getOrbit(point_x, point_y, fractals[fractalChoiceIndex]);
         path.attributes["stroke"] = "#ff0000";
         path.attributes["stroke-width"] = "1";
         String pathString = "";
-        
+
         for(Result res in orbits) {
             double x = res.realComponentOfResult*width+width;
-            double y = res.imaginaryComponentOfResult*height+height;
+            double y = res.imaginaryComponentOfResult*height+height/2;
             if(pathString.isEmpty) {
                 pathString = "M $x,$y";
             }
@@ -112,7 +118,7 @@ class Fractal {
     List<Result> getOrbit(double x, double y, dynamic equation) {
         List<Result> orbits = new List<Result>();
         Result ongoingResult = new Result(0,x,y);
-        for(var i = 0; i < maxIterations; i++) {
+        for(var i = 0; i < maxOrbitIterations; i++) {
             ongoingResult = equation(x,y,ongoingResult);
             orbits.add(ongoingResult);
             // Return a number as a percentage
@@ -124,13 +130,13 @@ class Fractal {
 
     double checkIfBelongsToSet(double x, double y, dynamic equation) {
         Result ongoingResult = new Result(0,x,y);
-        for(var i = 0; i < maxIterations; i++) {
+        for(var i = 0; i < maxDrawIterations; i++) {
             ongoingResult = equation(x,y,ongoingResult);
             // Return a number as a percentage
             if(ongoingResult.realComponentOfResult * ongoingResult.imaginaryComponentOfResult > 5)
-                return (i/maxIterations * 100);
+                return (i/maxDrawIterations * 100);
         }
-        return maxIterations*1.0;   // Return zero if in set
+        return 0.0;   // Return zero if in set
     }
 
     void render(num placeholder) {
@@ -139,13 +145,13 @@ class Fractal {
             for(int y=0; y < canvas.height; y++) {
                 double belongsToSet =
                 checkIfBelongsToSet(x/magnificationFactor - panX,
-                    y/magnificationFactor - panY, fractalChosen);
+                    y/magnificationFactor - panY, fractals[fractalChoiceIndex]);
 
                 if(belongsToSet == 0) {
                     ctx.fillStyle = '#000';
                     ctx.fillRect(x,y, 1,1); // Draw a black pixel
                 } else {
-                    ctx.fillStyle = 'hsl(0, 100%, $belongsToSet%)';
+                    ctx.fillStyle = 'hsl(0, 100%, ${belongsToSet/10}%)';
                     ctx.fillRect(x,y, 1,1); // Draw a colorful pixel
                 }
             }
