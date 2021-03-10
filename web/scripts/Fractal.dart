@@ -1,14 +1,18 @@
 import 'dart:async';
 import 'dart:html';
+import 'dart:math';
 import 'package:complex/complex.dart';
 import 'dart:svg';
-
 //https://progur.com/2017/02/create-mandelbrot-fractal-javascript.html <--shamlessly copied this
 //https://github.com/HackerPoet/FractalSoundExplorer/blob/main/Main.cpp  <-- inspired by this
 class Fractal {
-    int height = 1000;
-    int width = 1000;
+    int height = 500;
+    int width = 500;
+    bool autoMode = true;
+    double autoX = -0.8;
+    double autoY = -0.8;
     double panX = 1.25;
+    Random rand = new Random();
     double panY = 1.25;
     bool mouseDown = false;
     SvgElement svg = new SvgElement.tag("svg");
@@ -22,11 +26,22 @@ class Fractal {
     int fractalChoiceIndex = 0;
 
     void attach(Element parent) {
-        fractals = [burning_ship, mandelbrot, sfx];;
+        fractals = [burning_ship, mandelbrot, sfx];
 
-        canvas.onMouseDown.listen((MouseEvent event) => mouseDown = true);
+
+        canvas.onMouseDown.listen((MouseEvent event) {
+            mouseDown = true;
+            autoMode = false;
+        });
         window.onMouseUp.listen((MouseEvent event) => mouseDown = false);
-        canvas.onMouseMove.listen((MouseEvent event) => mouseDown? drawOrbit(event) : null);
+
+        canvas.onMouseMove.listen((MouseEvent event) {
+            double point_x = event.page.x-canvas.offset.left;
+            point_x = point_x/magnificationFactor - panX;
+            double point_y = event.page.y-canvas.offset.top;
+            point_y = point_y/magnificationFactor -panY;
+            mouseDown? drawOrbit(point_x, point_y) : null;
+        });
         window.onKeyPress.listen((KeyboardEvent event) {
             print("key press");
             fractalChoiceIndex = (fractalChoiceIndex + 1) % fractals.length;
@@ -38,6 +53,32 @@ class Fractal {
         parent.append(svg);
         svg.append(path);
         render(0);
+        doAutoMode(0);
+    }
+
+    void doAutoMode(num frame) {
+        print("automode");
+        double maxNum = 1.0;
+        double minNum = -1.0;
+        autoX = max(minNum, autoX);
+        autoX = min(maxNum, autoX);
+        autoY = max(minNum, autoX);
+        autoY = min(maxNum, autoX);
+        int ratio = 30;
+        if(rand.nextDouble() > 0.5) {
+            autoX += rand.nextDouble()/ratio;
+        }else {
+            autoX += -1* rand.nextDouble()/ratio;
+        }
+
+        if(rand.nextDouble() > 0.5) {
+            autoY += rand.nextDouble()/ratio;
+        }else {
+            autoY += -1* rand.nextDouble()/ratio;
+        }
+
+        drawOrbit(autoX,autoY);
+        new Timer(new Duration(milliseconds: 60), () => window.requestAnimationFrame(doAutoMode));
     }
 
     double xPtToScreen(double x) {
@@ -48,11 +89,8 @@ class Fractal {
         return magnificationFactor * y;
     }
 
-    void drawOrbit(MouseEvent event) {
-        double point_x = event.page.x-canvas.offset.left;
-        point_x = point_x/magnificationFactor - panX;
-        double point_y = event.page.y-canvas.offset.top;
-        point_y = point_y/magnificationFactor -panY;
+    void drawOrbit(double point_x, double point_y) {
+        print("x $point_x y $point_y");
         List<Result> orbits = getOrbit(point_x, point_y, fractals[fractalChoiceIndex]);
         path.attributes["stroke"] = "#ff0000";
         path.attributes["stroke-width"] = "1";
