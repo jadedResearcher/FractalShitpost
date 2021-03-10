@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:html';
 import 'package:complex/complex.dart';
+import 'dart:svg';
+
 //https://progur.com/2017/02/create-mandelbrot-fractal-javascript.html <--shamlessly copied this
 //https://github.com/HackerPoet/FractalSoundExplorer/blob/main/Main.cpp  <-- inspired by this
 class Fractal {
@@ -8,20 +10,25 @@ class Fractal {
     int width = 500;
     double panX = 1.25;
     double panY = 1.25;
+    SvgElement svg = new SvgElement.tag("svg")..style.width="500px"..style.height="500px";
     CanvasElement canvas = new CanvasElement(width: 500, height: 500);
     int  magnificationFactor = 200;
     Element parent;
     int maxIterations = 100;
     dynamic fractalChosen;
+    PathElement path = new PathElement();
+
     StreamSubscription<MouseEvent> listener;
     void attach(Element parent) {
-        fractalChosen = sfx;
+        fractalChosen = burning_ship;
         if(listener != null) {
             listener.cancel();
         }
         listener = canvas.onClick.listen(drawOrbit);
         this.parent = parent;
         parent.append(canvas);
+        parent.append(svg);
+        svg.append(path);
         render(0);
     }
 
@@ -34,8 +41,27 @@ class Fractal {
     }
 
     void drawOrbit(MouseEvent event) {
-        //List<Result> orbits = getOrbit(event.page.x-canvas.offset.left, event.page.y-canvas.offset.top,fractalChosen);
-       // window.alert("click $orbits");
+        double x = event.page.x-canvas.offset.left;
+        x = x/magnificationFactor - panX;
+        double y = event.page.y-canvas.offset.top;
+        y = y/magnificationFactor -panY;
+        List<Result> orbits = getOrbit(x, y, fractalChosen);
+        window.alert("click $orbits");
+
+        path.attributes["stroke"] = "#ff0000";
+        path.attributes["stroke-width"] = "1";
+        String pathString = "";
+        
+        for(Result res in orbits) {
+            double x = res.realComponentOfResult*width+width;
+            double y = res.imaginaryComponentOfResult*height+height;
+            if(pathString.isEmpty) {
+                pathString = "M $x,$y";
+            }
+            pathString = "${pathString} L${x},${y} M${x},${y}";
+        }
+        pathString = "$pathString Z";
+        path.attributes["d"] = pathString;
     }
 
     void debug() {
@@ -50,7 +76,7 @@ class Fractal {
         double tempImaginaryComponent = 2 * res.realComponentOfResult * res.imaginaryComponentOfResult
             + y;
 
-        return new Result(tempRealComponent, tempImaginaryComponent);
+        return new Result(res.iteration + 1,tempRealComponent, tempImaginaryComponent);
     }
 
     /*
@@ -70,7 +96,7 @@ class Fractal {
         double tempRealComponent = tmp.real;
         double tempImaginaryComponent = tmp.imaginary;
 
-        return new Result(tempRealComponent, tempImaginaryComponent);
+        return new Result(res.iteration +1, tempRealComponent, tempImaginaryComponent);
     }
 
     Result burning_ship(double x, double y, Result res) {
@@ -80,31 +106,31 @@ class Fractal {
         double tempImaginaryComponent = 2 * (res.realComponentOfResult * res.imaginaryComponentOfResult).abs()
             + y;
 
-        return new Result(tempRealComponent, tempImaginaryComponent);
+        return new Result(res.iteration + 1,tempRealComponent, tempImaginaryComponent);
     }
 
     List<Result> getOrbit(double x, double y, dynamic equation) {
-        List<Result> orbit = new List<Result>();
-        Result ongoingResult = new Result(x,y);
+        List<Result> orbits = new List<Result>();
+        Result ongoingResult = new Result(0,x,y);
         for(var i = 0; i < maxIterations; i++) {
             ongoingResult = equation(x,y,ongoingResult);
-            orbit.add(ongoingResult);
+            orbits.add(ongoingResult);
             // Return a number as a percentage
             if(ongoingResult.realComponentOfResult * ongoingResult.imaginaryComponentOfResult > 5)
-                return orbit;
+                return orbits;
         }
-        return orbit;
+        return orbits;
     }
 
     double checkIfBelongsToSet(double x, double y, dynamic equation) {
-        Result ongoingResult = new Result(x,y);
+        Result ongoingResult = new Result(0,x,y);
         for(var i = 0; i < maxIterations; i++) {
             ongoingResult = equation(x,y,ongoingResult);
             // Return a number as a percentage
             if(ongoingResult.realComponentOfResult * ongoingResult.imaginaryComponentOfResult > 5)
                 return (i/maxIterations * 100);
         }
-        return 0;   // Return zero if in set
+        return maxIterations*1.0;   // Return zero if in set
     }
 
     void render(num placeholder) {
@@ -129,9 +155,10 @@ class Fractal {
 
 
 class Result {
+    int iteration = 0;
     double realComponentOfResult;
     double imaginaryComponentOfResult;
-    Result(double this.realComponentOfResult, double this.imaginaryComponentOfResult);
+    Result(int this.iteration, double this.realComponentOfResult, double this.imaginaryComponentOfResult);
     @override
-    String toString() => "($realComponentOfResult, $imaginaryComponentOfResult)";
+    String toString() => "$iteration: ($realComponentOfResult, $imaginaryComponentOfResult)";
 }
