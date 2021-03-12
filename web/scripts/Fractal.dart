@@ -27,15 +27,18 @@ class Fractal {
     List<dynamic> fractals;
     int fractalChoiceIndex = 0;
     OscillatorNode osc;
+    bool audio_playing = false;
 
     void attach(Element parent) {
         fractals = [burning_ship, mandelbrot, sfx];
         osc = context.createOscillator();
-        osc.start2(0);
 
         canvas.onMouseDown.listen((MouseEvent event) {
             mouseDown = true;
             autoMode = false;
+            if(!audio_playing) {
+                osc.start2(0);
+            }
         });
         window.onMouseUp.listen((MouseEvent event) => mouseDown = false);
 
