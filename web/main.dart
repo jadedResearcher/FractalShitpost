@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:html';
 
 import 'scripts/Fractal.dart';
-
+Fractal fractal;
 void main() {
   popup("Click and Drag. Press keys. There's sound.");
-  new Fractal()..attach(querySelector('#output'));
+  fractal = new Fractal()..attach(querySelector('#output'));
 }
 
 void popup(String text) {
@@ -15,6 +15,8 @@ void popup(String text) {
   listener= div.onMouseDown.listen((Event e) {
     div.remove();
     listener.cancel();
+    fractal.autoMode = false;
+
   });
 }
 

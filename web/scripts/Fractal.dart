@@ -35,19 +35,12 @@ class Fractal {
 
         canvas.onMouseDown.listen((MouseEvent event) {
             mouseDown = true;
-            autoMode = false;
             if(!audio_playing) {
                 osc.start2(0);
                 audio_playing = true;
             }
         });
 
-        window.onMouseMove.listen((MouseEvent event) {
-            if(!audio_playing) {
-                osc.start2(0);
-                audio_playing = true;
-            }
-        });
         window.onMouseUp.listen((MouseEvent event) => mouseDown = false);
 
         canvas.onMouseMove.listen((MouseEvent event) {
