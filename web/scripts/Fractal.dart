@@ -38,6 +38,14 @@ class Fractal {
             autoMode = false;
             if(!audio_playing) {
                 osc.start2(0);
+                audio_playing;
+            }
+        });
+
+        window.onMouseMove.listen((MouseEvent event) {
+            if(!audio_playing) {
+                osc.start2(0);
+                audio_playing;
             }
         });
         window.onMouseUp.listen((MouseEvent event) => mouseDown = false);
