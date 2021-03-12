@@ -107,7 +107,7 @@ class Fractal {
             var wave = context.createPeriodicWave(reals, fakes);
 
             osc.setPeriodicWave(wave);
-            osc.frequency.value = 440;
+            osc.frequency.value = 13;
             osc.connectNode(context.destination);
             new Timer(new Duration(milliseconds: 60), () => osc.disconnect());
 
