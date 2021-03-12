@@ -15,6 +15,7 @@ class Fractal {
     double panX = 1.25;
     Random rand = new Random();
     double panY = 1.25;
+    AudioContext context = new AudioContext();
     bool mouseDown = false;
     SvgElement svg = new SvgElement.tag("svg");
     CanvasElement canvas = new CanvasElement(width: 500, height: 500);
@@ -25,10 +26,12 @@ class Fractal {
     PathElement path = new PathElement();
     List<dynamic> fractals;
     int fractalChoiceIndex = 0;
+    OscillatorNode osc;
 
     void attach(Element parent) {
         fractals = [burning_ship, mandelbrot, sfx];
-
+        osc = context.createOscillator();
+        osc.start2(0);
 
         canvas.onMouseDown.listen((MouseEvent event) {
             mouseDown = true;
@@ -91,23 +94,18 @@ class Fractal {
     }
 
     void beep(List<Result> orbits) {
-        try {
-            var context = new AudioContext();
             List<double> reals = orbits.map((Result item) =>
             item.realComponentOfResult).toList();
             List<double> fakes = orbits.map((Result item) =>
             item.imaginaryComponentOfResult).toList();
 
             var wave = context.createPeriodicWave(reals, fakes);
-            var osc = context.createOscillator();
+
             osc.setPeriodicWave(wave);
             osc.frequency.value = 440;
             osc.connectNode(context.destination);
-            osc.start2(0);
-            osc.stop(0.1);
-        }catch(e) {
-            //apparently sometimes i pass it infinite values. this is fine.
-        }
+            new Timer(new Duration(milliseconds: 60), () => osc.disconnect());
+
     }
 
     void drawOrbit(double point_x, double point_y) {
@@ -179,7 +177,10 @@ class Fractal {
         Result ongoingResult = new Result(0,x,y);
         for(var i = 0; i < maxOrbitIterations; i++) {
             ongoingResult = equation(x,y,ongoingResult);
-            orbits.add(ongoingResult);
+            if(ongoingResult.realComponentOfResult is num && ongoingResult.imaginaryComponentOfResult is num) {
+                //plz no infinity for graphics OR sound
+                orbits.add(ongoingResult);
+            }
             // Return a number as a percentage
             if(ongoingResult.realComponentOfResult * ongoingResult.imaginaryComponentOfResult > 5)
                 return orbits;
@@ -223,7 +224,17 @@ class Result {
     int iteration = 0;
     double realComponentOfResult;
     double imaginaryComponentOfResult;
-    Result(int this.iteration, double this.realComponentOfResult, double this.imaginaryComponentOfResult);
+    Result(int this.iteration, double this.realComponentOfResult, double this.imaginaryComponentOfResult) {
+        //preserve sign but don't let get too big
+        int cap = 1000;
+        if(realComponentOfResult.abs() > cap) {
+            realComponentOfResult = cap* realComponentOfResult/realComponentOfResult.abs();
+        }
+        if(imaginaryComponentOfResult.abs() > cap) {
+            imaginaryComponentOfResult = cap * imaginaryComponentOfResult/imaginaryComponentOfResult.abs();
+        }
+
+    }
     @override
     String toString() => "$iteration: ($realComponentOfResult, $imaginaryComponentOfResult)";
 }
