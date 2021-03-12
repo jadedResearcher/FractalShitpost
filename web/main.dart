@@ -4,7 +4,7 @@ import 'dart:html';
 import 'scripts/Fractal.dart';
 
 void main() {
-  popup("Click and Drag. Press keys.");
+  popup("Click and Drag. Press keys. There's sound.");
   new Fractal()..attach(querySelector('#output'));
 }
 

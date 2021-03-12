@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:html';
 import 'dart:math';
+import 'dart:web_audio';
 import 'package:complex/complex.dart';
 import 'dart:svg';
 //https://progur.com/2017/02/create-mandelbrot-fractal-javascript.html <--shamlessly copied this
@@ -58,7 +59,6 @@ class Fractal {
 
     void doAutoMode(num frame) {
         if(!autoMode) return;
-        print("automode");
         double maxNum = 1.0;
         double minNum = -1.0;
         autoX = max(minNum, autoX);
@@ -90,9 +90,29 @@ class Fractal {
         return magnificationFactor * y;
     }
 
+    void beep(List<Result> orbits) {
+        try {
+            var context = new AudioContext();
+            List<double> reals = orbits.map((Result item) =>
+            item.realComponentOfResult).toList();
+            List<double> fakes = orbits.map((Result item) =>
+            item.imaginaryComponentOfResult).toList();
+
+            var wave = context.createPeriodicWave(reals, fakes);
+            var osc = context.createOscillator();
+            osc.setPeriodicWave(wave);
+            osc.frequency.value = 440;
+            osc.connectNode(context.destination);
+            osc.start2(0);
+            osc.stop(0.1);
+        }catch(e) {
+            //apparently sometimes i pass it infinite values. this is fine.
+        }
+    }
+
     void drawOrbit(double point_x, double point_y) {
-        print("x $point_x y $point_y");
         List<Result> orbits = getOrbit(point_x, point_y, fractals[fractalChoiceIndex]);
+        beep(orbits);
         path.attributes["stroke"] = "#ff0000";
         path.attributes["stroke-width"] = "1";
         String pathString = "";
