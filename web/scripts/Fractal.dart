@@ -35,6 +35,7 @@ class Fractal {
 
         canvas.onMouseDown.listen((MouseEvent event) {
             mouseDown = true;
+            autoMode = false;
             if(!audio_playing) {
                 osc.start2(0);
                 audio_playing = true;

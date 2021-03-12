@@ -15,8 +15,10 @@ void popup(String text) {
   listener= div.onMouseDown.listen((Event e) {
     div.remove();
     listener.cancel();
-    fractal.autoMode = false;
-
+    if(!fractal.audio_playing) {
+      fractal.osc.start2(0);
+      fractal.audio_playing = true;
+    }
   });
 }
 
