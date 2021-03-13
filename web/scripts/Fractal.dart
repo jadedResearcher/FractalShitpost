@@ -105,7 +105,7 @@ class Fractal {
             List<double> fakes = orbits.map((Result item) =>
             item.imaginaryComponentOfResult).toList();
             if(!autoMode) {
-                debugArea.value = "Unique Points: ${orbits.toSet().length}";
+                debugArea.value = "Unique Points: ${orbits.toSet()}";
             }
 
             var wave = context.createPeriodicWave(reals, fakes);
