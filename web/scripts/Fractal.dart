@@ -22,7 +22,7 @@ class Fractal {
     int  magnificationFactor = 300;
     Element parent;
     int maxDrawIterations = 10;
-    int maxOrbitIterations = 100;
+    int maxOrbitIterations = 50;
     PathElement path = new PathElement();
     List<dynamic> fractals;
     int fractalChoiceIndex = 0;
@@ -34,15 +34,6 @@ class Fractal {
         parent.append(debugArea);
         fractals = [burning_ship, mandelbrot, sfx];
         osc = context.createOscillator();
-        Result first = new Result(1,0.0,1.0);
-        Result second = new Result(1,0.0,1.0);
-        Result different = new Result(1,0.1,1.0);
-        print('is first and second same ${first == second}');
-        print('is first and different same ${first == different}');
-        List<Result> list = [first, second, different];
-        print(list.toSet());
-
-
         canvas.onMouseDown.listen((MouseEvent event) {
             mouseDown = true;
             autoMode = false;
@@ -113,6 +104,9 @@ class Fractal {
             item.realComponentOfResult).toList();
             List<double> fakes = orbits.map((Result item) =>
             item.imaginaryComponentOfResult).toList();
+            if(!autoMode) {
+                debugArea.value = "Unique Points: ${orbits.toSet().length}";
+            }
 
             var wave = context.createPeriodicWave(reals, fakes);
 
@@ -131,8 +125,8 @@ class Fractal {
         String pathString = "";
 
         for(Result res in orbits) {
-            double x = res.realComponentOfResult*width+width;
-            double y = res.imaginaryComponentOfResult*height+height/2;
+            double x = res.realComponentOfResult*width+1.25*width;
+            double y = res.imaginaryComponentOfResult*height+3*height/4;
             if(pathString.isEmpty) {
                 pathString = "M $x,$y";
             }
