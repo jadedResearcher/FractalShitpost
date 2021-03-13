@@ -22,7 +22,7 @@ class Fractal {
     int  magnificationFactor = 300;
     Element parent;
     int maxDrawIterations = 10;
-    int maxOrbitIterations = 50;
+    int maxOrbitIterations = 255;
     PathElement path = new PathElement();
     List<dynamic> fractals;
     int fractalChoiceIndex = 0;
@@ -105,7 +105,7 @@ class Fractal {
             List<double> fakes = orbits.map((Result item) =>
             item.imaginaryComponentOfResult).toList();
             if(!autoMode) {
-                debugArea.value = "Unique Points: ${orbits.toSet()}";
+                debugArea.value = "Unique Points: ${orbits.toSet().length}";
             }
 
             var wave = context.createPeriodicWave(reals, fakes);
@@ -120,7 +120,11 @@ class Fractal {
     void drawOrbit(double point_x, double point_y) {
         List<Result> orbits = getOrbit(point_x, point_y, fractals[fractalChoiceIndex]);
         beep(orbits);
-        path.attributes["stroke"] = "#ff0000";
+        int uniqueOrbitLength = orbits.toSet().length;
+        int red = uniqueOrbitLength;
+        if(red < 50) red = 50;
+        if(red > 255) red =255;
+        path.attributes["stroke"] = "rgb($red,0,0)";
         path.attributes["stroke-width"] = "1";
         String pathString = "";
 
