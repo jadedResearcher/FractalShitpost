@@ -28,10 +28,20 @@ class Fractal {
     int fractalChoiceIndex = 0;
     OscillatorNode osc;
     bool audio_playing = false;
+    TextAreaElement debugArea = new TextAreaElement();
 
     void attach(Element parent) {
+        parent.append(debugArea);
         fractals = [burning_ship, mandelbrot, sfx];
         osc = context.createOscillator();
+        Result first = new Result(1,0.0,1.0);
+        Result second = new Result(1,0.0,1.0);
+        Result different = new Result(1,0.1,1.0);
+        print('is first and second same ${first == second}');
+        print('is first and different same ${first == different}');
+        List<Result> list = [first, second, different];
+        print(list.toSet());
+
 
         canvas.onMouseDown.listen((MouseEvent event) {
             mouseDown = true;
@@ -241,5 +251,9 @@ class Result {
 
     }
     @override
+    bool operator == (Object other) => other is Result && other.realComponentOfResult == realComponentOfResult && other.imaginaryComponentOfResult == imaginaryComponentOfResult;
+    @override
     String toString() => "$iteration: ($realComponentOfResult, $imaginaryComponentOfResult)";
+    @override
+    int get hashCode => realComponentOfResult.hashCode ^ imaginaryComponentOfResult.hashCode;
 }
