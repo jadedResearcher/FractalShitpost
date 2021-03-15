@@ -28,7 +28,7 @@ class Fractal {
     int fractalChoiceIndex = 0;
     OscillatorNode osc;
     bool audio_playing = false;
-    TextAreaElement debugArea = new TextAreaElement();
+    DivElement debugArea = new DivElement();
 
     void attach(Element parent) {
         parent.append(debugArea);
@@ -43,7 +43,17 @@ class Fractal {
             }
         });
 
+
+        canvas.onTouchStart.listen((TouchEvent event) {
+            mouseDown = true;
+            autoMode = false;
+            if(!audio_playing) {
+                osc.start2(0);
+                audio_playing = true;
+            }
+        });
         window.onMouseUp.listen((MouseEvent event) => mouseDown = false);
+        window.onTouchEnd.listen((TouchEvent event) => mouseDown =false);
 
         canvas.onMouseMove.listen((MouseEvent event) {
             double point_x = event.page.x-canvas.offset.left;
@@ -52,6 +62,14 @@ class Fractal {
             point_y = point_y/magnificationFactor -panY;
             mouseDown? drawOrbit(point_x, point_y) : null;
         });
+        canvas.onTouchMove.listen((TouchEvent event) {
+            double point_x = event.touches.first.page.x-canvas.offset.left;
+            point_x = point_x/magnificationFactor - panX;
+            double point_y = event.touches.first.page.y-canvas.offset.top;
+            point_y = point_y/magnificationFactor -panY;
+            mouseDown? drawOrbit(point_x, point_y) : null;
+        });
+
         window.onKeyPress.listen((KeyboardEvent event) {
             print("key press");
             fractalChoiceIndex = (fractalChoiceIndex + 1) % fractals.length;
@@ -105,7 +123,7 @@ class Fractal {
             List<double> fakes = orbits.map((Result item) =>
             item.imaginaryComponentOfResult).toList();
             if(!autoMode) {
-                debugArea.value = "Unique Points: ${orbits.toSet().length}";
+                debugArea.setInnerHtml("Unique Points: ${orbits.toSet().length}");
             }
 
             var wave = context.createPeriodicWave(reals, fakes);
