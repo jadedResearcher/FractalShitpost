@@ -8,9 +8,20 @@ html, body {
   font-family: 'Roboto', sans-serif;
   background-color: black;
 }
+.container{
+ width: 1000px;
+ height: 500px;
+ position: relative;
+}
 
 #output {
   padding: 20px;
+}
+
+canvas{
+    position: absolute;
+    top: 0px;
+    left: 0px;
 }
 
 svg{

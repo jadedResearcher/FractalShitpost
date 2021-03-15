@@ -8,7 +8,7 @@ import 'dart:svg';
 //https://github.com/HackerPoet/FractalSoundExplorer/blob/main/Main.cpp  <-- inspired by this
 class Fractal {
     int height = 500;
-    int width = 500;
+    int width = 1000;
     bool autoMode = true;
     double autoX = -0.8;
     double autoY = -0.8;
@@ -18,7 +18,7 @@ class Fractal {
     AudioContext context = new AudioContext();
     bool mouseDown = false;
     SvgElement svg = new SvgElement.tag("svg");
-    CanvasElement canvas = new CanvasElement(width: 500, height: 500);
+    CanvasElement canvas = new CanvasElement(width: 1000, height: 500);
     int  magnificationFactor = 300;
     Element parent;
     int maxDrawIterations = 10;
@@ -29,9 +29,11 @@ class Fractal {
     OscillatorNode osc;
     bool audio_playing = false;
     DivElement debugArea = new DivElement();
+    DivElement container = new DivElement()..classes.add("container");
 
     void attach(Element parent) {
         parent.append(debugArea);
+        parent.append(container);
         fractals = [burning_ship, mandelbrot, sfx];
         osc = context.createOscillator();
         canvas.onMouseDown.listen((MouseEvent event) {
@@ -77,8 +79,8 @@ class Fractal {
         });
 
         this.parent = parent;
-        parent.append(canvas);
-        parent.append(svg);
+        container.append(canvas);
+        container.append(svg);
         svg.append(path);
         render(0);
         doAutoMode(0);
@@ -147,7 +149,7 @@ class Fractal {
         String pathString = "";
 
         for(Result res in orbits) {
-            double x = res.realComponentOfResult*width+1.25*width;
+            double x = res.realComponentOfResult*width+(0.75*width);
             double y = res.imaginaryComponentOfResult*height+3*height/4;
             if(pathString.isEmpty) {
                 pathString = "M $x,$y";
